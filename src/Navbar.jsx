@@ -5,6 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import PersonPinIcon from '@mui/icons-material/PersonPin';
 import MenuIcon from '@mui/icons-material/Menu';
 
 export default function Navbar({ children }) {
@@ -18,7 +19,7 @@ export default function Navbar({ children }) {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             CRUD - APP
           </Typography>
-          <Button color="inherit">Log out</Button>
+          <PersonPinIcon color="inherit">Log out</PersonPinIcon>
         </Toolbar>
       </AppBar>
       <Box sx={{ flexGrow: 1 }}>

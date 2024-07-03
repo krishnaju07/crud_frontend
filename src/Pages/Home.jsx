@@ -15,14 +15,13 @@ import {
   Typography,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-// Validation Schema
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
   email: Yup.string()
@@ -34,7 +33,6 @@ const validationSchema = Yup.object({
     .integer("Age must be an integer"),
 });
 
-// Basic Form Component
 const BasicForm = ({ initialValues, onSubmit }) => {
   const formik = useFormik({
     initialValues: initialValues,
@@ -56,9 +54,6 @@ const BasicForm = ({ initialValues, onSubmit }) => {
         width: "100%",
       }}
     >
-      <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-        Basic Form
-      </Typography>
       <TextField
         fullWidth
         id="name"
@@ -103,24 +98,37 @@ const BasicForm = ({ initialValues, onSubmit }) => {
 export default function Home() {
   const [data, setData] = useState([]);
   const [type, setType] = useState("view");
+//   console.log("type", type);
   const [currentData, setCurrentData] = useState({
     name: "",
     email: "",
     age: "",
   });
   const [editIndex, setEditIndex] = useState(null);
-  const GET_API = "http://localhost:5000/getData";
+  const API = "http://localhost:5000";
 
   useEffect(() => {
-    fetch(GET_API)
+    fetch(`${API}/getData`)
       .then((res) => res.json())
       .then((res) => setData(res))
       .catch((err) => console.log("err", err));
   }, []);
 
   const handleAdd = (values) => {
-    setData([...data, values]);
-    setType("view");
+    // console.log("ssjsss", values);
+    fetch(`${API}/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        setData([...data, res]);
+        setType("view");
+      })
+      .catch((err) => console.log("err", err));
   };
 
   const handleEdit = (index) => {
@@ -130,15 +138,34 @@ export default function Home() {
   };
 
   const handleEditSubmit = (values) => {
-    const newData = [...data];
-    newData[editIndex] = values;
-    setData(newData);
-    setType("view");
+    fetch(`${API}/${data[editIndex]._id}/update`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        return fetch(`${API}/getData`);
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        setData(res);
+        setType("view");
+      })
+      .catch((err) => console.log("err", err));
   };
 
   const handleDelete = (index) => {
-    const newData = data.filter((_, i) => i !== index);
-    setData(newData);
+    fetch(`${API}/${data[index]._id}/delete`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        const newData = data.filter((_, i) => i !== index);
+        setData(newData);
+      })
+      .catch((err) => console.log("err", err));
   };
 
   const handleClose = () => {
@@ -162,7 +189,7 @@ export default function Home() {
           </Box>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
-              <TableHead sx={{ backgroundColor: "red" }}>
+              <TableHead sx={{ backgroundColor: "gray" }}>
                 <TableRow>
                   <TableCell>Name</TableCell>
                   <TableCell align="right">Email</TableCell>
@@ -182,7 +209,9 @@ export default function Home() {
                     <TableCell align="right">{row.email}</TableCell>
                     <TableCell align="right">{row.age}</TableCell>
                     <TableCell align="right">
-                      <EditIcon onClick={() => handleEdit(index)}>Edit</EditIcon>
+                      <EditIcon onClick={() => handleEdit(index)}>
+                        Edit
+                      </EditIcon>
                       <DeleteForeverIcon onClick={() => handleDelete(index)}>
                         Delete
                       </DeleteForeverIcon>
